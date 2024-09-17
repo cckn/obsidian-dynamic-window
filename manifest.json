@@ -1,11 +1,10 @@
 {
-	"id": "sample-plugin",
-	"name": "Sample Plugin",
+	"id": "obsidian-always-on-top",
+	"name": "Always on Top",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "Demonstrates some of the capabilities of the Obsidian API.",
-	"author": "Obsidian",
-	"authorUrl": "https://obsidian.md",
-	"fundingUrl": "https://obsidian.md/pricing",
+	"description": "Keeps window on top with dynamic opacity and position changes based on focus",
+	"author": "cckn",
+	"authorUrl": "https://github.com/cckn",
 	"isDesktopOnly": false
 }
