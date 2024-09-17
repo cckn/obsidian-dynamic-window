@@ -9,26 +9,34 @@ interface WindowBounds {
 	height: number;
 }
 
-interface MyPluginSettings {
+interface AllwaysOnTopSettings {
 	enableOpacityChange: boolean;
+
 	focusOpacity: number;
 	blurOpacity: number;
+
 	enableWindowResize: boolean;
 	focusBounds: WindowBounds;
 	blurBounds: WindowBounds;
+	enableBorder: boolean;
+	borderColor: string;
+	borderWidth: number;
 }
 
-const DEFAULT_SETTINGS: MyPluginSettings = {
+const DEFAULT_SETTINGS: AllwaysOnTopSettings = {
 	enableOpacityChange: true,
 	focusOpacity: 1.0,
 	blurOpacity: 0.5,
 	enableWindowResize: false,
 	focusBounds: { x: 100, y: 100, width: 800, height: 600 },
 	blurBounds: { x: 150, y: 150, width: 700, height: 500 },
+	enableBorder: true,
+	borderColor: "#FF5733",
+	borderWidth: 2,
 };
 
 export default class MyPlugin extends Plugin {
-	settings: MyPluginSettings;
+	settings: AllwaysOnTopSettings;
 	focusHandler: () => void;
 	blurHandler: () => void;
 
@@ -118,6 +126,8 @@ export default class MyPlugin extends Plugin {
 	}
 
 	applySettings(window: any, isFocused: boolean) {
+		const body = document.body;
+
 		if (this.settings.enableOpacityChange) {
 			if (isFocused) {
 				window.setOpacity(this.settings.focusOpacity);
@@ -132,6 +142,16 @@ export default class MyPlugin extends Plugin {
 			} else {
 				window.setBounds(this.settings.blurBounds);
 			}
+		}
+
+		if (this.settings.enableBorder) {
+			if (isFocused) {
+				body.style.border = "none";
+			} else {
+				body.style.border = `${this.settings.borderWidth}px solid ${this.settings.borderColor}`;
+			}
+		} else {
+			body.style.border = "none";
 		}
 	}
 }
