@@ -1,10 +1,11 @@
 {
-	"id": "obsidian-always-on-top",
-	"name": "Always on Top",
-	"version": "1.0.0",
+	"id": "obsidian-dynamic-window",
+	"name": "Dynamic Window",
+	"version": "1.0.1",
 	"minAppVersion": "0.15.0",
-	"description": "Keep window on top with focus-based opacity and position.",
+	"description": "Keep window on top with focus-based opacity, size, and position adjustments.",
 	"author": "cckn",
 	"authorUrl": "https://github.com/cckn",
+	"fundingUrl": "https://github.com/sponsors/cckn",
 	"isDesktopOnly": false
 }

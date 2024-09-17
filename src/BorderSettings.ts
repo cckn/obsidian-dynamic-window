@@ -39,9 +39,8 @@ export class BorderSettings {
 				.setDesc(
 					"Set the color of the border when the window is inactive. This helps identify the window when it's transparent."
 				)
-				.addText((text) =>
-					text
-						.setPlaceholder("#FF5733")
+				.addColorPicker((colorPicker) =>
+					colorPicker
 						.setValue(this.plugin.settings.borderColor)
 						.onChange(async (value) => {
 							this.plugin.settings.borderColor = value;

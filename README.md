@@ -1,14 +1,12 @@
-# Obsidian Always on Top Plugin
-
-This plugin allows you to keep your Obsidian window always on top of other windows, with customizable opacity and size settings based on focus state.
+# Obsidian Dynamic Window
 
 ## Features
 
--   Keep Obsidian window always on top
--   Adjust window opacity when focused/unfocused
--   Resize window when focused/unfocused
--   Add a border to the window when unfocused
--   Hot reload for easy development
+-   **Always on Top**: Keep your Obsidian window always on top of other windows
+-   **Focus-Based Opacity**: Adjust window opacity when focused/unfocused
+-   **Dynamic Window Resizing**: Resize window when focused/unfocused
+-   **Visual Feedback**: Add a border to the window when unfocused
+-   **User-Friendly Settings**: Easily customize all features through intuitive settings tabs
 
 ## Installation
 
@@ -18,7 +16,7 @@ This plugin allows you to keep your Obsidian window always on top of other windo
 
 ## Usage
 
-1. After activating the plugin, find the "Always on Top" section in Obsidian settings.
+1. After activating the plugin, find the "Dynamic Window Manager" section in Obsidian settings.
 2. Enable desired features and adjust settings:
     - Activate "Always on Top" functionality
     - Set opacity for focused/unfocused states
