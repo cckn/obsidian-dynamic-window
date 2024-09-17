@@ -18,9 +18,10 @@ export class ResizeSettings {
 	}
 
 	create(): void {
-		this.containerEl.createEl("h3", { text: "Window resize settings" });
+		const { containerEl } = this;
+		containerEl.createEl("h3", { text: "Window resize settings" });
 
-		new Setting(this.containerEl)
+		new Setting(containerEl)
 			.setName("Enable window resize")
 			.setDesc("Adjust window size and position based on focus state")
 			.addToggle((toggle) =>
@@ -29,42 +30,33 @@ export class ResizeSettings {
 					.onChange(async (value) => {
 						this.plugin.settings.enableWindowResize = value;
 						await this.plugin.saveSettings();
-						this.toggle(value);
 					})
 			);
 
 		this.createResizeSettings();
-
-		this.toggle(this.plugin.settings.enableWindowResize);
 	}
 
 	private createResizeSettings(): void {
-		// Focused state settings
-		this.saveAsFocusedButton = new Setting(this.containerEl)
-			.setName("Save current size as focused state")
-			.addButton((button) =>
-				button
-					.setButtonText("Save as Focused")
-					.onClick(() => this.saveCurrentSize("focus"))
-			);
-
 		this.createBoundsGroup("Focused", "focusBounds");
-
-		// Unfocused state settings
-		this.saveAsUnfocusedButton = new Setting(this.containerEl)
-			.setName("Save current size as unfocused state")
-			.addButton((button) =>
-				button
-					.setButtonText("Save as Unfocused")
-					.onClick(() => this.saveCurrentSize("blur"))
-			);
 
 		this.createBoundsGroup("Unfocused", "blurBounds");
 	}
 
-	private createBoundsGroup(state: string, boundsType: string): void {
+	private createBoundsGroup(
+		state: "Focused" | "Unfocused",
+		boundsType: string
+	): void {
 		const groupEl = this.containerEl.createDiv();
 		groupEl.createEl("h4", { text: `${state} state settings` });
+
+		// Focused state settings
+		new Setting(groupEl)
+			.setName(`Save current size as ${state} state`)
+			.addButton((button) =>
+				button
+					.setButtonText(`Save as ${state}`)
+					.onClick(() => this.saveCurrentSize(state))
+			);
 
 		this.createBoundsSetting(
 			groupEl,
@@ -123,14 +115,16 @@ export class ResizeSettings {
 		] = value;
 	}
 
-	private async saveCurrentSize(state: "focus" | "blur"): Promise<void> {
+	private async saveCurrentSize(
+		state: "Focused" | "Unfocused"
+	): Promise<void> {
 		const electron = require("electron");
 		const window = electron.remote
 			? electron.remote.getCurrentWindow()
 			: electron.getCurrentWindow();
 		const bounds = window.getBounds();
 
-		if (state === "focus") {
+		if (state === "Focused") {
 			this.plugin.settings.focusBounds = bounds;
 		} else {
 			this.plugin.settings.blurBounds = bounds;
@@ -138,11 +132,7 @@ export class ResizeSettings {
 
 		await this.plugin.saveSettings();
 		this.updateResizeSettings();
-		new Notice(
-			`Current window size saved as ${
-				state === "focus" ? "focused" : "unfocused"
-			} state`
-		);
+		new Notice(`Current window size saved as ${state} state`);
 	}
 
 	private updateResizeSettings(): void {
@@ -168,18 +158,5 @@ export class ResizeSettings {
 			"Unfocused window height": "blurBounds.height",
 		};
 		return keyMap[name] || null;
-	}
-
-	toggle(show: boolean): void {
-		this.resizeSettings.forEach((setting) => {
-			setting.settingEl.style.display = show ? "block" : "none";
-		});
-		this.saveAsFocusedButton.settingEl.style.display = show
-			? "block"
-			: "none";
-		this.saveAsUnfocusedButton.settingEl.style.display = show
-			? "block"
-			: "none";
-		this.containerEl.style.display = show ? "block" : "none";
 	}
 }

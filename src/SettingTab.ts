@@ -28,10 +28,5 @@ export class SettingTab extends PluginSettingTab {
 		this.opacitySettings.create();
 		this.resizeSettings.create();
 		this.borderSettings.create();
-
-		// 초기 토글 상태 설정
-		this.opacitySettings.toggle(this.plugin.settings.enableOpacityChange);
-		this.resizeSettings.toggle(this.plugin.settings.enableWindowResize);
-		this.borderSettings.toggle(this.plugin.settings.enableBorder);
 	}
 }

@@ -22,7 +22,6 @@ export class OpacitySettings {
 					.onChange(async (value) => {
 						this.plugin.settings.enableOpacityChange = value;
 						await this.plugin.saveSettings();
-						this.toggle(value);
 					})
 			);
 
@@ -68,11 +67,5 @@ export class OpacitySettings {
 						})
 				)
 		);
-	}
-
-	toggle(show: boolean): void {
-		this.opacitySettings.forEach((setting) => {
-			setting.settingEl.style.display = show ? "block" : "none";
-		});
 	}
 }

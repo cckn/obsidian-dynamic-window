@@ -22,14 +22,11 @@ export class BorderSettings {
 					.onChange(async (value) => {
 						this.plugin.settings.enableBorder = value;
 						await this.plugin.saveSettings();
-						this.toggle(value);
 					})
 			);
 
 		this.createBorderColorSetting();
 		this.createBorderWidthSetting();
-
-		this.toggle(this.plugin.settings.enableBorder);
 	}
 
 	createBorderColorSetting(): void {
@@ -78,11 +75,5 @@ export class BorderSettings {
 						})
 				)
 		);
-	}
-
-	toggle(show: boolean): void {
-		this.borderSettings.forEach((setting) => {
-			setting.settingEl.style.display = show ? "block" : "none";
-		});
 	}
 }
