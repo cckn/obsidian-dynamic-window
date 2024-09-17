@@ -3,7 +3,7 @@
 	"name": "Always on Top",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "Keeps window on top with dynamic opacity and position changes based on focus",
+	"description": "Keep window on top with focus-based opacity and position.",
 	"author": "cckn",
 	"authorUrl": "https://github.com/cckn",
 	"isDesktopOnly": false
