@@ -1,7 +1,7 @@
 {
 	"id": "dynamic-window",
 	"name": "Dynamic Window",
-	"version": "1.0.8",
+	"version": "1.0.9",
 	"minAppVersion": "0.15.0",
 	"description": "Keep window on top with focus-based opacity, size, and position adjustments.",
 	"author": "cckn",
