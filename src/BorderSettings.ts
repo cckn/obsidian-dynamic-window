@@ -9,12 +9,12 @@ export class BorderSettings {
 	}
 
 	create(): void {
-		this.containerEl.createEl("h3", { text: "테두리 설정" });
+		this.containerEl.createEl("h3", { text: "Border settings" });
 
 		new Setting(this.containerEl)
-			.setName("테두리 활성화")
+			.setName("Enable border")
 			.setDesc(
-				"창이 흐릿해질 때 테두리를 표시합니다. 이는 창이 투명할 때 위치를 파악하는 데 도움이 됩니다."
+				"Show a border when the window is inactive. This helps locate the window when it's transparent."
 			)
 			.addToggle((toggle) =>
 				toggle
@@ -35,9 +35,9 @@ export class BorderSettings {
 	createBorderColorSetting(): void {
 		this.borderSettings.push(
 			new Setting(this.containerEl)
-				.setName("테두리 색상")
+				.setName("Border color")
 				.setDesc(
-					"흐릿해질 때의 테두리 색상. 창이 투명할 때 더 쉽게 식별할 수 있도록 도와줍니다."
+					"Set the color of the border when the window is inactive. This helps identify the window when it's transparent."
 				)
 				.addText((text) =>
 					text
@@ -58,9 +58,9 @@ export class BorderSettings {
 	createBorderWidthSetting(): void {
 		this.borderSettings.push(
 			new Setting(this.containerEl)
-				.setName("테두리 너비")
+				.setName("Border width")
 				.setDesc(
-					"테두리의 너비(픽셀 단위). 더 두꺼운 테두리는 창이 투명할 때 찾기 쉽게 만들 수 있습니다."
+					"Set the width of the border in pixels. A thicker border can make the window easier to find when transparent."
 				)
 				.addText((text) =>
 					text

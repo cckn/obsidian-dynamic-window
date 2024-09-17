@@ -11,11 +11,11 @@ export class OpacitySettings {
 	create(): void {
 		const { containerEl } = this;
 
-		containerEl.createEl("h3", { text: "투명도 설정" });
+		containerEl.createEl("h3", { text: "Opacity settings" });
 
 		new Setting(containerEl)
-			.setName("투명도 변경 활성화")
-			.setDesc("포커스 상태에 따라 창 투명도 변경")
+			.setName("Change opacity based on focus")
+			.setDesc("Adjust window transparency when app gains or loses focus")
 			.addToggle((toggle) =>
 				toggle
 					.setValue(this.plugin.settings.enableOpacityChange)
@@ -33,14 +33,14 @@ export class OpacitySettings {
 	createFocusedOpacitySetting(): void {
 		this.opacitySettings.push(
 			new Setting(this.containerEl)
-				.setName("포커스 상태 투명도")
-				.setDesc("창이 포커스된 상태일 때의 투명도 (0.0 - 1.0)")
+				.setName("Focused opacity")
+				.setDesc("Set opacity when app is in focus (0.0 - 1.0)")
 				.addText((text) =>
 					text
 						.setPlaceholder("1.0")
 						.setValue(this.plugin.settings.focusOpacity.toString())
 						.onChange(async (value) => {
-							let num = parseFloat(value);
+							const num = parseFloat(value);
 							if (!isNaN(num) && num >= 0 && num <= 1) {
 								this.plugin.settings.focusOpacity = num;
 								await this.plugin.saveSettings();
@@ -53,14 +53,14 @@ export class OpacitySettings {
 	createBlurredOpacitySetting(): void {
 		this.opacitySettings.push(
 			new Setting(this.containerEl)
-				.setName("블러 상태 투명도")
-				.setDesc("창이 블러 상태일 때의 투명도 (0.0 - 1.0)")
+				.setName("Blurred opacity")
+				.setDesc("Set opacity when app loses focus (0.0 - 1.0)")
 				.addText((text) =>
 					text
 						.setPlaceholder("0.5")
 						.setValue(this.plugin.settings.blurOpacity.toString())
 						.onChange(async (value) => {
-							let num = parseFloat(value);
+							const num = parseFloat(value);
 							if (!isNaN(num) && num >= 0 && num <= 1) {
 								this.plugin.settings.blurOpacity = num;
 								await this.plugin.saveSettings();

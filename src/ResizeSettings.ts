@@ -10,17 +10,19 @@ interface WindowBounds {
 
 export class ResizeSettings {
 	private resizeSettings: Setting[];
+	private saveAsFocusedButton: Setting;
+	private saveAsUnfocusedButton: Setting;
 
 	constructor(private containerEl: HTMLElement, private plugin: MyPlugin) {
 		this.resizeSettings = [];
 	}
 
 	create(): void {
-		this.containerEl.createEl("h3", { text: "창 크기 조절 설정" });
+		this.containerEl.createEl("h3", { text: "Window resize settings" });
 
 		new Setting(this.containerEl)
-			.setName("창 크기 조절 활성화")
-			.setDesc("포커스 상태에 따라 창 크기와 위치 변경")
+			.setName("Enable window resize")
+			.setDesc("Adjust window size and position based on focus state")
 			.addToggle((toggle) =>
 				toggle
 					.setValue(this.plugin.settings.enableWindowResize)
@@ -37,62 +39,91 @@ export class ResizeSettings {
 	}
 
 	private createResizeSettings(): void {
-		new Setting(this.containerEl)
-			.setName("현재 창 크기 포커스 상태로 저장하기")
+		// Focused state settings
+		this.saveAsFocusedButton = new Setting(this.containerEl)
+			.setName("Save current size as focused state")
 			.addButton((button) =>
 				button
-					.setButtonText("포커스 상태로 저장")
-					.onClick(() => this.rememberCurrentSize("focus"))
+					.setButtonText("Save as Focused")
+					.onClick(() => this.saveCurrentSize("focus"))
 			);
 
-		this.createBoundsSetting("포커스 시 창 위치 - x", "focusBounds.x");
-		this.createBoundsSetting("포커스 시 창 위치 - y", "focusBounds.y");
-		this.createBoundsSetting("포커스 시 창 크기 - w", "focusBounds.width");
-		this.createBoundsSetting("포커스 시 창 크기 - h", "focusBounds.height");
+		this.createBoundsGroup("Focused", "focusBounds");
 
-		new Setting(this.containerEl)
-			.setName("현재 창 크기 블러 상태로 저장하기")
+		// Unfocused state settings
+		this.saveAsUnfocusedButton = new Setting(this.containerEl)
+			.setName("Save current size as unfocused state")
 			.addButton((button) =>
 				button
-					.setButtonText("블러 상태로 저장")
-					.onClick(() => this.rememberCurrentSize("blur"))
+					.setButtonText("Save as Unfocused")
+					.onClick(() => this.saveCurrentSize("blur"))
 			);
 
-		this.createBoundsSetting("블러 시 창 위치 - x", "blurBounds.x");
-		this.createBoundsSetting("블러 시 창 위치 - y", "blurBounds.y");
-		this.createBoundsSetting("블러 시 창 크기 - w", "blurBounds.width");
-		this.createBoundsSetting("블러 시 창 크기 - h", "blurBounds.height");
+		this.createBoundsGroup("Unfocused", "blurBounds");
 	}
 
-	private createBoundsSetting(name: string, key: string): void {
-		const setting = new Setting(this.containerEl)
-			.setName(name)
-			.addText((text) =>
-				text
-					.setValue(this.getBoundsValue(key).toString())
-					.onChange(async (value) => {
-						const num = parseInt(value);
-						if (!isNaN(num)) {
-							this.setBoundsValue(key, num);
-							await this.plugin.saveSettings();
-						}
-					})
-			);
+	private createBoundsGroup(state: string, boundsType: string): void {
+		const groupEl = this.containerEl.createDiv();
+		groupEl.createEl("h4", { text: `${state} state settings` });
+
+		this.createBoundsSetting(
+			groupEl,
+			`${state} window X position`,
+			`${boundsType}.x`
+		);
+		this.createBoundsSetting(
+			groupEl,
+			`${state} window Y position`,
+			`${boundsType}.y`
+		);
+		this.createBoundsSetting(
+			groupEl,
+			`${state} window width`,
+			`${boundsType}.width`
+		);
+		this.createBoundsSetting(
+			groupEl,
+			`${state} window height`,
+			`${boundsType}.height`
+		);
+	}
+
+	private createBoundsSetting(
+		containerEl: HTMLElement,
+		name: string,
+		key: string
+	): void {
+		const setting = new Setting(containerEl).setName(name).addText((text) =>
+			text
+				.setPlaceholder("Enter a number")
+				.setValue(this.getBoundsValue(key).toString())
+				.onChange(async (value) => {
+					const num = parseInt(value);
+					if (!isNaN(num)) {
+						this.setBoundsValue(key, num);
+						await this.plugin.saveSettings();
+					}
+				})
+		);
 
 		this.resizeSettings.push(setting);
 	}
 
 	private getBoundsValue(key: string): number {
 		const [type, property] = key.split(".");
-		return this.plugin.settings[type as "focusBounds" | "blurBounds"][property as keyof WindowBounds];
+		return this.plugin.settings[type as "focusBounds" | "blurBounds"][
+			property as keyof WindowBounds
+		];
 	}
 
 	private setBoundsValue(key: string, value: number): void {
 		const [type, property] = key.split(".");
-		this.plugin.settings[type as "focusBounds" | "blurBounds"][property as keyof WindowBounds] = value;
+		this.plugin.settings[type as "focusBounds" | "blurBounds"][
+			property as keyof WindowBounds
+		] = value;
 	}
 
-	private async rememberCurrentSize(state: "focus" | "blur"): Promise<void> {
+	private async saveCurrentSize(state: "focus" | "blur"): Promise<void> {
 		const electron = require("electron");
 		const window = electron.remote
 			? electron.remote.getCurrentWindow()
@@ -108,9 +139,9 @@ export class ResizeSettings {
 		await this.plugin.saveSettings();
 		this.updateResizeSettings();
 		new Notice(
-			`현재 창 상태가 ${
-				state === "focus" ? "포커스" : "블러"
-			} 상태로 저장되었습니다`
+			`Current window size saved as ${
+				state === "focus" ? "focused" : "unfocused"
+			} state`
 		);
 	}
 
@@ -127,14 +158,14 @@ export class ResizeSettings {
 
 	private getSettingKey(name: string): string | null {
 		const keyMap: { [key: string]: string } = {
-			"포커스 시 창 위치 - x": "focusBounds.x",
-			"포커스 시 창 위치 - y": "focusBounds.y",
-			"포커스 시 창 크기 - w": "focusBounds.width",
-			"포커스 시 창 크기 - h": "focusBounds.height",
-			"블러 시 창 위치 - x": "blurBounds.x",
-			"블러 시 창 위치 - y": "blurBounds.y",
-			"블러 시 창 크기 - w": "blurBounds.width",
-			"블러 시 창 크기 - h": "blurBounds.height",
+			"Focused window X position": "focusBounds.x",
+			"Focused window Y position": "focusBounds.y",
+			"Focused window width": "focusBounds.width",
+			"Focused window height": "focusBounds.height",
+			"Unfocused window X position": "blurBounds.x",
+			"Unfocused window Y position": "blurBounds.y",
+			"Unfocused window width": "blurBounds.width",
+			"Unfocused window height": "blurBounds.height",
 		};
 		return keyMap[name] || null;
 	}
@@ -143,5 +174,12 @@ export class ResizeSettings {
 		this.resizeSettings.forEach((setting) => {
 			setting.settingEl.style.display = show ? "block" : "none";
 		});
+		this.saveAsFocusedButton.settingEl.style.display = show
+			? "block"
+			: "none";
+		this.saveAsUnfocusedButton.settingEl.style.display = show
+			? "block"
+			: "none";
+		this.containerEl.style.display = show ? "block" : "none";
 	}
 }
