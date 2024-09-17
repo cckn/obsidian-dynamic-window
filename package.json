@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-dynamic-window",
-	"version": "1.0.3",
+	"version": "1.0.4",
 	"description": "Dynamic window for Obsidian",
 	"main": "main.js",
 	"scripts": {
