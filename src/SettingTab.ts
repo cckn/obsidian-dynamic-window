@@ -11,12 +11,18 @@ export class SettingTab extends PluginSettingTab {
 	plugin: MyPlugin;
 	focusedSettings: Setting[];
 	blurredSettings: Setting[];
+	opacitySettings: Setting[];
+	resizeSettings: Setting[];
+	borderSettings: Setting[];
 
 	constructor(app: App, plugin: MyPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
 		this.focusedSettings = [];
 		this.blurredSettings = [];
+		this.opacitySettings = [];
+		this.resizeSettings = [];
+		this.borderSettings = [];
 	}
 
 	display(): void {
@@ -36,40 +42,45 @@ export class SettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						this.plugin.settings.enableOpacityChange = value;
 						await this.plugin.saveSettings();
+						this.toggleOpacitySettings(value);
 					})
 			);
 
-		new Setting(containerEl)
-			.setName("Focused opacity")
-			.setDesc("Window opacity when focused (0.0 - 1.0)")
-			.addText((text) =>
-				text
-					.setPlaceholder("1.0")
-					.setValue(this.plugin.settings.focusOpacity.toString())
-					.onChange(async (value) => {
-						let num = parseFloat(value);
-						if (!isNaN(num) && num >= 0 && num <= 1) {
-							this.plugin.settings.focusOpacity = num;
-							await this.plugin.saveSettings();
-						}
-					})
-			);
+		this.opacitySettings.push(
+			new Setting(containerEl)
+				.setName("Focused opacity")
+				.setDesc("Window opacity when focused (0.0 - 1.0)")
+				.addText((text) =>
+					text
+						.setPlaceholder("1.0")
+						.setValue(this.plugin.settings.focusOpacity.toString())
+						.onChange(async (value) => {
+							let num = parseFloat(value);
+							if (!isNaN(num) && num >= 0 && num <= 1) {
+								this.plugin.settings.focusOpacity = num;
+								await this.plugin.saveSettings();
+							}
+						})
+				)
+		);
 
-		new Setting(containerEl)
-			.setName("Blurred opacity")
-			.setDesc("Window opacity when blurred (0.0 - 1.0)")
-			.addText((text) =>
-				text
-					.setPlaceholder("0.88")
-					.setValue(this.plugin.settings.blurOpacity.toString())
-					.onChange(async (value) => {
-						let num = parseFloat(value);
-						if (!isNaN(num) && num >= 0 && num <= 1) {
-							this.plugin.settings.blurOpacity = num;
-							await this.plugin.saveSettings();
-						}
-					})
-			);
+		this.opacitySettings.push(
+			new Setting(containerEl)
+				.setName("Blurred opacity")
+				.setDesc("Window opacity when blurred (0.0 - 1.0)")
+				.addText((text) =>
+					text
+						.setPlaceholder("0.88")
+						.setValue(this.plugin.settings.blurOpacity.toString())
+						.onChange(async (value) => {
+							let num = parseFloat(value);
+							if (!isNaN(num) && num >= 0 && num <= 1) {
+								this.plugin.settings.blurOpacity = num;
+								await this.plugin.saveSettings();
+							}
+						})
+				)
+		);
 
 		// Window Resize Settings Group
 		containerEl.createEl("h3", { text: "Window Resize Settings" });
@@ -83,37 +94,38 @@ export class SettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						this.plugin.settings.enableWindowResize = value;
 						await this.plugin.saveSettings();
+						this.toggleResizeSettings(value);
 					})
 			);
 
 		// Focused Window Settings Subgroup
-		containerEl.createEl("h4", { text: "Focused Window Settings" });
+		this.resizeSettings.push(
+			new Setting(containerEl)
+				.setName("Memorize current window state as focused")
+				.setDesc(
+					"Save current window position and size for the focused state"
+				)
+				.addButton((button) =>
+					button.setButtonText("Memorize").onClick(async () => {
+						const electron = require("electron");
+						const window = electron.remote
+							? electron.remote.getCurrentWindow()
+							: electron.getCurrentWindow();
+						const bounds = window.getBounds();
+						this.plugin.settings.focusBounds = {
+							x: bounds.x,
+							y: bounds.y,
+							width: bounds.width,
+							height: bounds.height,
+						};
+						await this.plugin.saveSettings();
+						this.updateFocusedSettingsUI();
+						new Notice("Current window state memorized as focused");
+					})
+				)
+		);
 
-		new Setting(containerEl)
-			.setName("Memorize current window state as focused")
-			.setDesc(
-				"Save current window position and size for the focused state"
-			)
-			.addButton((button) =>
-				button.setButtonText("Memorize").onClick(async () => {
-					const electron = require("electron");
-					const window = electron.remote
-						? electron.remote.getCurrentWindow()
-						: electron.getCurrentWindow();
-					const bounds = window.getBounds();
-					this.plugin.settings.focusBounds = {
-						x: bounds.x,
-						y: bounds.y,
-						width: bounds.width,
-						height: bounds.height,
-					};
-					await this.plugin.saveSettings();
-					this.updateFocusedSettingsUI();
-					new Notice("Current window state memorized as focused");
-				})
-			);
-
-		this.focusedSettings.push(
+		this.resizeSettings.push(
 			new Setting(containerEl).setName("X coordinate").addText((text) =>
 				text
 					.setPlaceholder(
@@ -130,7 +142,7 @@ export class SettingTab extends PluginSettingTab {
 			)
 		);
 
-		this.focusedSettings.push(
+		this.resizeSettings.push(
 			new Setting(containerEl).setName("Y coordinate").addText((text) =>
 				text
 					.setPlaceholder(
@@ -147,7 +159,7 @@ export class SettingTab extends PluginSettingTab {
 			)
 		);
 
-		this.focusedSettings.push(
+		this.resizeSettings.push(
 			new Setting(containerEl).setName("Width").addText((text) =>
 				text
 					.setPlaceholder(
@@ -164,7 +176,7 @@ export class SettingTab extends PluginSettingTab {
 			)
 		);
 
-		this.focusedSettings.push(
+		this.resizeSettings.push(
 			new Setting(containerEl).setName("Height").addText((text) =>
 				text
 					.setPlaceholder(
@@ -184,33 +196,33 @@ export class SettingTab extends PluginSettingTab {
 		);
 
 		// Blurred Window Settings Subgroup
-		containerEl.createEl("h4", { text: "Blurred Window Settings" });
+		this.resizeSettings.push(
+			new Setting(containerEl)
+				.setName("Memorize current window state as blurred")
+				.setDesc(
+					"Save current window position and size for the blurred state"
+				)
+				.addButton((button) =>
+					button.setButtonText("Memorize").onClick(async () => {
+						const electron = require("electron");
+						const window = electron.remote
+							? electron.remote.getCurrentWindow()
+							: electron.getCurrentWindow();
+						const bounds = window.getBounds();
+						this.plugin.settings.blurBounds = {
+							x: bounds.x,
+							y: bounds.y,
+							width: bounds.width,
+							height: bounds.height,
+						};
+						await this.plugin.saveSettings();
+						this.updateBlurredSettingsUI();
+						new Notice("Current window state memorized as blurred");
+					})
+				)
+		);
 
-		new Setting(containerEl)
-			.setName("Memorize current window state as blurred")
-			.setDesc(
-				"Save current window position and size for the blurred state"
-			)
-			.addButton((button) =>
-				button.setButtonText("Memorize").onClick(async () => {
-					const electron = require("electron");
-					const window = electron.remote
-						? electron.remote.getCurrentWindow()
-						: electron.getCurrentWindow();
-					const bounds = window.getBounds();
-					this.plugin.settings.blurBounds = {
-						x: bounds.x,
-						y: bounds.y,
-						width: bounds.width,
-						height: bounds.height,
-					};
-					await this.plugin.saveSettings();
-					this.updateBlurredSettingsUI();
-					new Notice("Current window state memorized as blurred");
-				})
-			);
-
-		this.blurredSettings.push(
+		this.resizeSettings.push(
 			new Setting(containerEl).setName("X coordinate").addText((text) =>
 				text
 					.setPlaceholder(
@@ -227,7 +239,7 @@ export class SettingTab extends PluginSettingTab {
 			)
 		);
 
-		this.blurredSettings.push(
+		this.resizeSettings.push(
 			new Setting(containerEl).setName("Y coordinate").addText((text) =>
 				text
 					.setPlaceholder(
@@ -244,7 +256,7 @@ export class SettingTab extends PluginSettingTab {
 			)
 		);
 
-		this.blurredSettings.push(
+		this.resizeSettings.push(
 			new Setting(containerEl).setName("Width").addText((text) =>
 				text
 					.setPlaceholder(
@@ -261,7 +273,7 @@ export class SettingTab extends PluginSettingTab {
 			)
 		);
 
-		this.blurredSettings.push(
+		this.resizeSettings.push(
 			new Setting(containerEl).setName("Height").addText((text) =>
 				text
 					.setPlaceholder(
@@ -277,85 +289,121 @@ export class SettingTab extends PluginSettingTab {
 					})
 			)
 		);
+
 		// Border Settings Group
 		containerEl.createEl("h3", { text: "Border Settings" });
 
 		new Setting(containerEl)
 			.setName("Enable border")
-			.setDesc("Show a border around the window when blurred. This helps locate the window when it's transparent.")
+			.setDesc(
+				"Show a border around the window when blurred. This helps locate the window when it's transparent."
+			)
 			.addToggle((toggle) =>
 				toggle
 					.setValue(this.plugin.settings.enableBorder)
 					.onChange(async (value) => {
 						this.plugin.settings.enableBorder = value;
 						await this.plugin.saveSettings();
-						this.plugin.applySettings(window, document.hasFocus());
+						this.toggleBorderSettings(value);
 					})
 			);
 
-		new Setting(containerEl)
-			.setName("Border color")
-			.setDesc("Color of the border when blurred. Helps identify the window more easily when it's transparent.")
-			.addText((text) =>
-				text
-					.setPlaceholder("#FF5733")
-					.setValue(this.plugin.settings.borderColor)
-					.onChange(async (value) => {
-						this.plugin.settings.borderColor = value;
-						await this.plugin.saveSettings();
-						this.plugin.applySettings(window, document.hasFocus());
-					})
-			);
-
-		new Setting(containerEl)
-			.setName("Border width")
-			.setDesc("Width of the border in pixels. A thicker border can make the window easier to find when transparent.")
-			.addText((text) =>
-				text
-					.setPlaceholder("2")
-					.setValue(this.plugin.settings.borderWidth.toString())
-					.onChange(async (value) => {
-						const num = parseInt(value);
-						if (!isNaN(num) && num >= 0) {
-							this.plugin.settings.borderWidth = num;
+		this.borderSettings.push(
+			new Setting(containerEl)
+				.setName("Border color")
+				.setDesc(
+					"Color of the border when blurred. Helps identify the window more easily when it's transparent."
+				)
+				.addText((text) =>
+					text
+						.setPlaceholder("#FF5733")
+						.setValue(this.plugin.settings.borderColor)
+						.onChange(async (value) => {
+							this.plugin.settings.borderColor = value;
 							await this.plugin.saveSettings();
 							this.plugin.applySettings(
 								window,
 								document.hasFocus()
 							);
-						}
-					})
-			);
+						})
+				)
+		);
+
+		this.borderSettings.push(
+			new Setting(containerEl)
+				.setName("Border width")
+				.setDesc(
+					"Width of the border in pixels. A thicker border can make the window easier to find when transparent."
+				)
+				.addText((text) =>
+					text
+						.setPlaceholder("2")
+						.setValue(this.plugin.settings.borderWidth.toString())
+						.onChange(async (value) => {
+							const num = parseInt(value);
+							if (!isNaN(num) && num >= 0) {
+								this.plugin.settings.borderWidth = num;
+								await this.plugin.saveSettings();
+								this.plugin.applySettings(
+									window,
+									document.hasFocus()
+								);
+							}
+						})
+				)
+		);
+
+		this.toggleOpacitySettings(this.plugin.settings.enableOpacityChange);
+		this.toggleResizeSettings(this.plugin.settings.enableWindowResize);
+		this.toggleBorderSettings(this.plugin.settings.enableBorder);
+	}
+
+	toggleOpacitySettings(show: boolean) {
+		this.opacitySettings.forEach((setting) => {
+			setting.settingEl.style.display = show ? "block" : "none";
+		});
+	}
+
+	toggleResizeSettings(show: boolean) {
+		this.resizeSettings.forEach((setting) => {
+			setting.settingEl.style.display = show ? "block" : "none";
+		});
+	}
+
+	toggleBorderSettings(show: boolean) {
+		this.borderSettings.forEach((setting) => {
+			setting.settingEl.style.display = show ? "block" : "none";
+		});
 	}
 
 	updateFocusedSettingsUI() {
 		const bounds = this.plugin.settings.focusBounds;
-		(this.focusedSettings[0].components[0] as TextComponent).setValue(
+		(this.resizeSettings[1].components[0] as TextComponent).setValue(
 			bounds.x.toString()
 		);
-		(this.focusedSettings[1].components[0] as TextComponent).setValue(
+		(this.resizeSettings[2].components[0] as TextComponent).setValue(
 			bounds.y.toString()
 		);
-		(this.focusedSettings[2].components[0] as TextComponent).setValue(
+		(this.resizeSettings[3].components[0] as TextComponent).setValue(
 			bounds.width.toString()
 		);
-		(this.focusedSettings[3].components[0] as TextComponent).setValue(
+		(this.resizeSettings[4].components[0] as TextComponent).setValue(
 			bounds.height.toString()
 		);
 	}
 
 	updateBlurredSettingsUI() {
 		const bounds = this.plugin.settings.blurBounds;
-		(this.blurredSettings[0].components[0] as TextComponent).setValue(
+		(this.resizeSettings[6].components[0] as TextComponent).setValue(
 			bounds.x.toString()
 		);
-		(this.blurredSettings[1].components[0] as TextComponent).setValue(
+		(this.resizeSettings[7].components[0] as TextComponent).setValue(
 			bounds.y.toString()
 		);
-		(this.blurredSettings[2].components[0] as TextComponent).setValue(
+		(this.resizeSettings[8].components[0] as TextComponent).setValue(
 			bounds.width.toString()
 		);
-		(this.blurredSettings[3].components[0] as TextComponent).setValue(
+		(this.resizeSettings[9].components[0] as TextComponent).setValue(
 			bounds.height.toString()
 		);
 	}
