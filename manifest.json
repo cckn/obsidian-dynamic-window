@@ -6,6 +6,5 @@
 	"description": "Keep window on top with focus-based opacity, size, and position adjustments.",
 	"author": "cckn",
 	"authorUrl": "https://github.com/cckn",
-	"fundingUrl": "https://github.com/sponsors/cckn",
 	"isDesktopOnly": false
 }
